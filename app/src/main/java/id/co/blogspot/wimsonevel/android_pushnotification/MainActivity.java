@@ -1,5 +1,7 @@
 package id.co.blogspot.wimsonevel.android_pushnotification;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,9 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String PREF_SWITCH_NEWS = "switch_news";
+    private static final String PREF_SWITCH_PROMO = "switch_promo";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +41,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        switchNews.setChecked(isSwitchChecked(PREF_SWITCH_NEWS));
+        switchPromo.setChecked(isSwitchChecked(PREF_SWITCH_PROMO));
+
         switchNews.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+                setSwitchChecked(PREF_SWITCH_NEWS, checked);
+
                 if(checked) {
                     FirebaseMessaging.getInstance().subscribeToTopic("news");
                     Toast.makeText(getApplicationContext(), "Subscribe to News Topic" , Toast.LENGTH_SHORT).show();
@@ -53,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         switchPromo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+                setSwitchChecked(PREF_SWITCH_PROMO, checked);
+
                 if(checked) {
                     FirebaseMessaging.getInstance().subscribeToTopic("promo");
                     Toast.makeText(getApplicationContext(), "Subscribe to Promo Topic", Toast.LENGTH_SHORT).show();
@@ -64,4 +76,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void setSwitchChecked(String permission, boolean isChecked) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(permission, isChecked);
+        editor.apply();
+    }
+
+    private boolean isSwitchChecked(String permission) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return preferences.getBoolean(permission, false);
+    }
+
 }
